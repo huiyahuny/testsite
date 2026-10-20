@@ -5,8 +5,8 @@
 // 사용하면 안 됩니다. 실제 저장 권한은 GitHub 토큰으로 제어합니다.
 // =============================================================
 window.ARCHIVE_ADMIN_CONFIG = {
-  editorCode: "[7762]",
-  owner: "huiyahuny",    // GitHub 계정명
-  repo: "testsite",      // 저장소 이름
-  branch: "main"        // 배포 브랜치
+  editorCode: "test1717",
+  owner: "huiyahuny",
+  repo: "testsite",
+  branch: "main"
 };
