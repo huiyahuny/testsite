@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0b0d13" />
+  <meta name="description" content="창작 세계관과 캐릭터를 기록하는 아카이브" />
+  <title>THE UNWRITTEN — World Archive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="data.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="grain" aria-hidden="true"></div>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="주 메뉴">
+      <div class="brand"><div class="brand-symbol" aria-hidden="true">✧</div><div><span class="brand-kicker">THE ARCHIVE OF</span><strong id="side-brand">THE UNWRITTEN</strong></div></div>
+      <div class="rail-rule"><span>EST. 2026</span><span>VOL. 001</span></div>
+      <nav class="side-nav" id="main-nav">
+        <button class="nav-btn active" data-page="home" aria-current="page"><span class="nav-index">01</span> HOME <span class="nav-arrow">↗</span></button>
+        <button class="nav-btn" data-page="world"><span class="nav-index">02</span> WORLD <span class="nav-arrow">↗</span></button>
+        <button class="nav-btn" data-page="characters"><span class="nav-index">03</span> CHARACTERS <span class="nav-arrow">↗</span></button>
+        <button class="nav-btn" data-page="timeline"><span class="nav-index">04</span> TIMELINE <span class="nav-arrow">↗</span></button>
+        <button class="nav-btn" data-page="archive"><span class="nav-index">05</span> ARCHIVE <span class="nav-arrow">↗</span></button>
+      </nav>
+      <div class="side-bottom"><div class="side-ornament">✦ &nbsp; — &nbsp; ✦</div><p>Stories are never<br/>truly forgotten.</p><span id="side-copyright">© 2026 ORIGINAL WORLD ARCHIVE</span></div>
+    </aside>
+
+    <main class="main-area" id="main-content">
+      <header class="topbar"><span class="topbar-left"><span class="status-dot"></span> PRIVATE UNIVERSE · PUBLIC ARCHIVE</span><span class="topbar-right" id="topbar-title">THE UNWRITTEN / 001</span></header>
+      <div id="view" aria-live="polite"></div>
+      <footer class="footer"><span id="footer-copyright">© 2026 ORIGINAL WORLD ARCHIVE</span><span>DESIGNED FOR STORIES THAT DESERVE TO REMAIN</span></footer>
+    </main>
+  </div>
+
+  <dialog id="character-dialog" class="character-dialog" aria-label="캐릭터 상세 프로필">
+    <button id="modal-close" type="button" class="modal-close" aria-label="닫기">✕</button>
+    <div id="modal-body"></div>
+  </dialog>
+</body>
+</html>
