@@ -9,8 +9,25 @@
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="admin.css">
   <script src="data.js" defer></script>
-  <script src="admin-config.js" defer></script>
-  <script src="admin.js" defer></script>
+  <!-- 관리자 설정은 접속할 때마다 새로 받아서 오래된 비밀번호 캐시를 방지합니다. -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const configScript = document.createElement('script');
+      configScript.src = 'admin-config.js?fresh=' + Date.now();
+      configScript.onload = function () {
+        const editorScript = document.createElement('script');
+        editorScript.src = 'admin.js';
+        editorScript.onerror = function () {
+          document.getElementById('gate-error').textContent = '관리자 편집 파일(admin.js)을 불러오지 못했습니다.';
+        };
+        document.body.appendChild(editorScript);
+      };
+      configScript.onerror = function () {
+        document.getElementById('gate-error').textContent = '관리자 설정 파일(admin-config.js)을 불러오지 못했습니다. GitHub 업로드 여부를 확인하세요.';
+      };
+      document.body.appendChild(configScript);
+    });
+  </script>
 </head>
 <body class="admin-body">
   <div class="grain" aria-hidden="true"></div>
