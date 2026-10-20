@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="theme-color" content="#0b0d13">
+  <title>ADMIN — World Archive</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="admin.css">
+  <script src="data.js" defer></script>
+  <script src="admin-config.js" defer></script>
+  <script src="admin.js" defer></script>
+</head>
+<body class="admin-body">
+  <div class="grain" aria-hidden="true"></div>
+  <header class="admin-header">
+    <a href="index.html#home" class="admin-brand"><span class="admin-mark">✧</span><span>WORLD ARCHIVE <small>EDITOR</small></span></a>
+    <a class="admin-back" href="index.html#home">← 홈페이지로 돌아가기</a>
+  </header>
+  <main>
+    <section class="admin-gate" id="admin-gate">
+      <div class="admin-gate-icon">✧</div>
+      <p class="admin-eyebrow">PRIVATE EDITING INTERFACE</p>
+      <h1>Archive Access</h1>
+      <p>설정한 관리자 인증값을 입력하면 편집 화면이 열립니다.</p>
+      <form id="gate-form" class="admin-login-form">
+        <label for="gate-code">관리자 인증값</label>
+        <input id="gate-code" type="password" required autocomplete="off" placeholder="관리자 인증값 입력">
+        <button class="admin-primary" type="submit">편집 화면 열기 ↗</button>
+      </form>
+      <p class="admin-error" id="gate-error" role="alert" aria-live="polite"></p>
+      <div class="admin-notice">이 화면을 여는 고정값은 공개 JavaScript에서 확인할 수 있습니다. 실제 GitHub 저장은 별도의 액세스 토큰이 있어야 가능합니다.</div>
+    </section>
+    <section id="admin-workspace" class="admin-workspace" hidden>
+      <div class="admin-intro">
+        <div><span class="admin-eyebrow">CONTENT MANAGEMENT</span><h1>Archive Editor <small>사이트 내용 편집</small></h1>
+        <p>아래에서 내용을 수정하고 맨 아래의 GitHub 저장을 누르세요. 저장 전에는 방문자 사이트가 바뀌지 않습니다.</p></div>
+        <div class="admin-toolbar"><button class="admin-outline" type="button" id="download-backup">수정본 파일 내려받기</button><button class="admin-outline" type="button" id="discard-changes">수정 취소</button></div>
+      </div>
+      <nav class="admin-tabs" id="admin-tabs" aria-label="편집 메뉴">
+        <button data-editor="site" class="active" aria-pressed="true">홈 / 공통</button>
+        <button data-editor="world">세계관</button>
+        <button data-editor="characters">캐릭터</button>
+        <button data-editor="timeline">연대기</button>
+        <button data-editor="archive">자료실</button>
+      </nav>
+      <div class="admin-editor" id="admin-editor"></div>
+      <section class="admin-publish" id="admin-publish">
+        <div class="admin-publish-header"><div><span class="admin-eyebrow">PUBLISH CHANGES</span><h2>GitHub에 저장하기</h2><p>저장하면 GitHub의 <code>data.js</code>와 새 이미지 파일이 자동으로 업데이트됩니다.</p></div><span class="admin-dirty" id="dirty-status">수정 사항 없음</span></div>
+        <div class="admin-security-message">고정 관리자 인증값만으로는 GitHub에 파일을 쓸 수 없습니다. 아래에는 GitHub에서 별도로 발급한 <b>fine-grained 토큰</b>을 입력하세요. 이 토큰은 파일이나 브라우저 저장소에 기록하지 않으며, 이 화면을 닫으면 사라집니다. 저장소 <code>testsite</code>에 <b>Contents: Read and write</b> 권한이 필요합니다.</div>
+        <div class="admin-token-form"><label for="github-token">GitHub 액세스 토큰 <small>화면을 새로 열면 다시 입력</small></label><div class="admin-token-row"><input id="github-token" type="password" autocomplete="off" placeholder="github_pat_..." spellcheck="false"><button class="admin-outline" type="button" id="verify-token">저장소 연결 확인</button></div></div>
+        <div class="admin-publish-actions"><button class="admin-primary" type="button" id="publish-btn">수정 내용 GitHub에 저장 ↗</button><a href="index.html#home" class="admin-outline admin-external-link">방문자 사이트 확인 ↗</a></div>
+        <p class="admin-message" id="publish-status" role="status" aria-live="polite">파일을 수정한 다음 GitHub에 저장할 수 있습니다.</p>
+      </section>
+    </section>
+  </main>
+</body>
+</html>

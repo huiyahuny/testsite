@@ -17,28 +17,27 @@
 
   function home() {
     const featured = (d.characters || []).slice(0,3);
-    const titleParts = String(d.siteTitle || "THE UNWRITTEN").trim().split(/\s+/);
-    const firstTitle = titleParts.shift() || "THE";
-    const secondTitle = titleParts.join(" ") || "ARCHIVE";
+    const firstTitle = d.heroTitleLine1 || "[메인 제목]";
+    const secondTitle = d.heroTitleLine2 || "[메인 부제목]";
     return `<div class="view-wrap">
-      <section class="hero"><span class="hero-astral" aria-hidden="true"></span><span class="hero-index">A STORY IN FRAGMENTS / 001</span><div class="hero-content"><div class="hero-pre">${label(d.themeLabel)}</div><h1>${esc(firstTitle)}<br><em>${esc(secondTitle)}</em></h1><p class="hero-korean">${esc(d.tagline)}<br><span style="color:#9899a5">${esc(d.worldName)}</span></p><div class="hero-actions"><button class="btn" data-goto="world">세계관 탐색하기 &nbsp; ↗</button><button class="btn outline" data-goto="characters">등장인물 보기 &nbsp; ↗</button></div></div><span class="hero-label">Every world has its own secret.</span></section>
+      <section class="hero"><span class="hero-astral" aria-hidden="true"></span><span class="hero-index">CHARACTER & WORLD ARCHIVE</span><div class="hero-content"><div class="hero-pre">${label(d.themeLabel)}</div><h1 class="${firstTitle.startsWith('[') ? 'is-placeholder' : ''}">${esc(firstTitle)}<br><em>${esc(secondTitle)}</em></h1><p class="hero-korean">${esc(d.tagline)}<br><span style="color:#9899a5">${esc(d.worldName)}</span></p><div class="hero-actions"><button class="btn" data-goto="world">세계관 탐색하기 &nbsp; ↗</button><button class="btn outline" data-goto="characters">등장인물 보기 &nbsp; ↗</button></div></div><span class="hero-label">${esc(d.heroFooterCaption || "")}</span></section>
       <section class="section"><div class="section-top"><div>${label('ABOUT THE UNIVERSE')}<h2 class="section-title">A world to remember.</h2></div></div><div class="intro-card"><div>${label('WORLD OVERVIEW')}<h3>${esc(d.worldName)}</h3><p>${esc(d.summary)}</p></div><div class="seal" aria-hidden="true">✧</div></div><p class="disclaimer">${esc(d.notice)}</p><div class="info-grid">${(d.metrics||[]).map(m=>`<div class="info-box"><strong>${esc(m.number)}</strong><span>${esc(m.label)}</span></div>`).join('')}</div></section>
       <section class="section bordered"><div class="section-top"><div>${label('THE CAST')}<h2 class="section-title">Characters</h2></div><button class="minor-link" data-goto="characters">ALL CHARACTERS ↗</button></div><div class="character-grid">${featured.map(characterCard).join('')}</div></section>
       <section class="section bordered"><div class="section-top"><div>${label('A WORLD IN FRAGMENTS')}<h2 class="section-title">Worldbook</h2></div><button class="minor-link" data-goto="world">EXPLORE THE WORLD ↗</button></div><div class="world-grid">${(d.worldSections||[]).slice(0,3).map(worldCard).join('')}</div></section>
       </div>`;
   }
   function world() {
-    return `<div class="view-wrap">${banner('Worldbook', 'CHAPTER 01 · THE SETTING', `${d.worldName} — ${d.summary}`)}<section class="section"><div class="section-top"><div>${label('WORLD STRUCTURE')}<h2 class="section-title">The setting</h2></div></div><div class="world-grid">${(d.worldSections||[]).map(worldCard).join('')}</div><p class="disclaimer">더 많은 항목을 추가하려면 data.js의 worldSections에 항목을 복사해 넣으세요.</p></section></div>`;
+    return `<div class="view-wrap">${banner('Worldbook', 'CHAPTER 01 · THE SETTING', `${d.worldName} — ${d.summary}`)}<section class="section"><div class="section-top"><div>${label('WORLD STRUCTURE')}<h2 class="section-title">The setting</h2></div></div><div class="world-grid">${(d.worldSections||[]).map(worldCard).join('')}</div></section></div>`;
   }
   function characters() {
     const factions = [...new Set((d.characters||[]).map(c=>c.faction).filter(Boolean))];
-    return `<div class="view-wrap">${banner('Characters', 'CHAPTER 02 · THE PEOPLE', '이 세계를 움직이는 사람들. 각 인물의 카드를 선택하면 상세 프로필을 확인할 수 있습니다.')}<section class="section"><div class="filter-bar"><input class="search-input" id="character-search" type="search" placeholder="이름 · 소속 · 소개 검색" aria-label="캐릭터 검색" /><div class="filter-list" id="faction-filters"><button class="filter-btn active" data-faction="ALL">전체</button>${factions.map(f=>`<button class="filter-btn" data-faction="${esc(f)}">${esc(f)}</button>`).join('')}</div></div><div class="character-grid" id="characters-list">${(d.characters||[]).map(characterCard).join('')}</div><p class="disclaimer">캐릭터 추가 및 이미지 변경: data.js 파일의 characters 항목을 편집하세요.</p></section></div>`;
+    return `<div class="view-wrap">${banner('Characters', 'CHAPTER 02 · THE PEOPLE', d.charactersIntro)}<section class="section"><div class="filter-bar"><input class="search-input" id="character-search" type="search" placeholder="이름 · 소속 · 소개 검색" aria-label="캐릭터 검색" /><div class="filter-list" id="faction-filters"><button class="filter-btn active" data-faction="ALL">전체</button>${factions.map(f=>`<button class="filter-btn" data-faction="${esc(f)}">${esc(f)}</button>`).join('')}</div></div><div class="character-grid" id="characters-list">${(d.characters||[]).map(characterCard).join('')}</div></section></div>`;
   }
   function timeline() {
-    return `<div class="view-wrap">${banner('Timeline', 'CHAPTER 03 · THE CHRONICLES', '현재의 이야기를 만든 사건과 선택의 순서를 기록합니다.')}<section class="section"><div class="section-top"><div>${label('EVENTS & HISTORY')}<h2 class="section-title">Chronicles</h2></div></div><div class="timeline">${(d.timeline||[]).map(t=>`<article class="time-item"><div class="time-year">${esc(t.year)}</div><div><span class="time-category">${esc(t.category)}</span><h3 class="time-title">${esc(t.title)}</h3><p class="time-body">${esc(t.text)}</p></div></article>`).join('')}</div></section></div>`;
+    return `<div class="view-wrap">${banner('Timeline', 'CHAPTER 03 · THE CHRONICLES', d.timelineIntro)}<section class="section"><div class="section-top"><div>${label('EVENTS & HISTORY')}<h2 class="section-title">Chronicles</h2></div></div><div class="timeline">${(d.timeline||[]).map(t=>`<article class="time-item"><div class="time-year">${esc(t.year)}</div><div><span class="time-category">${esc(t.category)}</span><h3 class="time-title">${esc(t.title)}</h3><p class="time-body">${esc(t.text)}</p></div></article>`).join('')}</div></section></div>`;
   }
   function archive() {
-    return `<div class="view-wrap">${banner('Archive', 'CHAPTER 04 · THE RECORDS', '세계관의 용어와 문서, 짧은 설정을 주제별로 정리한 자료실입니다.')}<section class="section"><div class="section-top"><div>${label('OPEN THE RECORDS')}<h2 class="section-title">Documents</h2></div></div><div class="archive-list">${(d.archive||[]).map(a=>`<details class="archive-item"><summary><span class="archive-num">${esc(a.category)}</span><strong>${esc(a.title)}</strong><span class="plus" aria-hidden="true">+</span></summary><p>${esc(a.body)}</p></details>`).join('')}</div></section></div>`;
+    return `<div class="view-wrap">${banner('Archive', 'CHAPTER 04 · THE RECORDS', d.archiveIntro)}<section class="section"><div class="section-top"><div>${label('OPEN THE RECORDS')}<h2 class="section-title">Documents</h2></div></div><div class="archive-list">${(d.archive||[]).map(a=>`<details class="archive-item"><summary><span class="archive-num">${esc(a.category)}</span><strong>${esc(a.title)}</strong><span class="plus" aria-hidden="true">+</span></summary><p>${esc(a.body)}</p></details>`).join('')}</div></section></div>`;
   }
 
   const pages = {home,world,characters,timeline,archive};
@@ -48,7 +47,12 @@
     const safePage = Object.hasOwn(pages,page) ? page : 'home';
     document.title = `${safePage.toUpperCase()} — ${d.siteTitle}`;
     document.getElementById('side-brand').textContent = d.siteTitle;
-    document.getElementById('topbar-title').textContent = `${d.siteTitle} / 001`;
+    document.getElementById('side-kicker').textContent = d.siteKicker || '';
+    document.getElementById('side-motto').textContent = d.sidebarMotto || '';
+    document.getElementById('rail-year').textContent = d.yearLabel || '';
+    document.getElementById('rail-volume').textContent = d.volumeLabel || '';
+    document.getElementById('topbar-status').textContent = d.topbarStatus || '';
+    document.getElementById('topbar-title').textContent = d.siteTitle;
     document.getElementById('footer-copyright').textContent = d.copyright;
     document.getElementById('side-copyright').textContent = d.copyright;
     nav.querySelectorAll('[data-page]').forEach(b=>{
