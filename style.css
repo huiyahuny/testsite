@@ -18,3 +18,20 @@
 @media(max-width:720px){.hero h1.is-placeholder{font-size:clamp(28px,8vw,42px)}.brand strong{white-space:normal;overflow-wrap:anywhere}}
 
 .admin-foot-link{color:#b6a583;border-bottom:1px solid #716349;padding-bottom:2px}.admin-foot-link:hover{color:#f0dcb0}
+
+/* 푸터의 숨은 관리자 이동 아이콘 */
+.admin-foot-link {
+  display: inline-block;
+  margin-left: 8px;
+  color: #666875;
+  opacity: 0.5;
+  font-size: 13px;
+  border: none;
+  text-decoration: none;
+  transition: opacity 0.2s, color 0.2s;
+}
+
+.admin-foot-link:hover {
+  opacity: 1;
+  color: #cbb995;
+}
