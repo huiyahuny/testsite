@@ -30,7 +30,6 @@
     ['charactersIntro','캐릭터 목록 소개','long'],['timelineIntro','연대기 페이지 소개','long'],['archiveIntro','자료실 페이지 소개','long']
   ];
   const schemas = {
-    metrics: [['number','표시 숫자'], ['label','집계 설명']],
     worldSections: [['eyebrow','소분류'], ['title','항목 제목'], ['subtitle','소제목'], ['text','본문','long'], ['tags','태그 — 쉼표로 구분','tags']],
     characters: [['name','캐릭터 이름'],['english','영문명'],['role','역할·직책'],['faction','소속'], ['number','일련번호'], ['accent','배경 색상','accent'], ['quote','대표 대사','long'], ['short','카드 짧은 소개','long'],['description','상세 설정','long']],
     timeline: [['year','연대 / 시점'],['title','사건 제목'],['category','분류'],['text','사건 설명','long']],
@@ -66,8 +65,6 @@
     if (currentTab==='site') {
       html += tabHeader('Home & Identity','사이트 전체에서 공통으로 쓰는 제목과 문구를 편집합니다.');
       html += `<div class="admin-item"><div class="admin-form-grid">${fields.map(([key,title,mode])=>mkField(title,state[key],`data-site="${esc(key)}"`,mode)).join('')}</div></div>`;
-      html += tabHeader('Summary Counters','메인 화면의 숫자 카드입니다.','metrics');
-      html += `<div class="admin-items">${state.metrics.map((_,i)=>schemaCard('metrics',i)).join('')}</div>`;
     } else {
       const targets = {world:['worldSections','Worldbook','세계관 항목을 추가·수정·삭제하고 순서를 바꿀 수 있습니다.'],characters:['characters','Character Profiles','캐릭터를 등록하고 이미지를 첨부하거나 세부 프로필을 수정합니다.'],timeline:['timeline','Timeline','사건이 표시되는 순서는 위아래 버튼으로 바꿀 수 있습니다.'],archive:['archive','Documents','열고 닫을 수 있는 자료실 문서를 작성합니다.']};
       const [key,title,desc] = targets[currentTab];
@@ -85,7 +82,6 @@
   function findChar(id) {return (state.characters||[]).find(c=>c.id===id);}
   function newItem(kind) {
     switch(kind) {
-      case 'metrics':return {number:'[수]',label:'[집계 설명을 쓰시오]'};
       case 'worldSections':return {number:String(state.worldSections.length+1).padStart(2,'0'),eyebrow:'[분류를 쓰시오]',title:'[세계관 항목 제목]',subtitle:'[소제목을 쓰시오]',text:'[내용을 쓰시오]',tags:[]};
       case 'characters':return {id:freshId('char'),name:'[캐릭터 이름을 쓰시오]',english:'[영문명을 쓰시오]',number:String(state.characters.length+1).padStart(2,'0'),role:'[직책을 쓰시오]',faction:'[소속을 쓰시오]',accent:'gold',image:'',quote:'[대표 대사를 쓰시오]',short:'[짧은 소개를 쓰시오]',description:'[상세 설정을 쓰시오]',details:[{label:'소속',value:'[내용을 쓰시오]'}]};
       case 'timeline':return {year:'[시점을 쓰시오]',title:'[사건 제목]',category:'[사건 분류]',text:'[사건 내용을 쓰시오]'};
@@ -176,7 +172,7 @@
     releaseAllImages();state=clone(initial);dirty=false;renderEditor();
     setStatus('수정 내용이 취소되었습니다.','');
   });
-  function serializedData() {return `// 이 파일은 관리자 편집기에서 자동으로 생성합니다.\nwindow.SITE_DATA = ${JSON.stringify(state,null,2)};\n`;}
+  function serializedData() {const publishData=clone(state);delete publishData.metrics;return `// 이 파일은 관리자 편집기에서 자동으로 생성합니다.\nwindow.SITE_DATA = ${JSON.stringify(publishData,null,2)};\n`;}
   $('download-backup').addEventListener('click',()=>{
     const blob=new Blob([serializedData()],{type:'application/javascript;charset=utf-8'});
     const url=URL.createObjectURL(blob);const a=document.createElement('a');
@@ -197,6 +193,79 @@
     } finally { bitmap.close?.(); }
   }
   function setStatus(str,kind='') {const el=$('publish-status');el.textContent=str;el.className='admin-message'+(kind?' '+kind:'');}
+  // GitHub Pages 실제 공개 data.js와 방금 업로드한 원문을 비교해 완료 여부를 판단합니다.
+  // GitHub API 토큰은 여기서 사용하지 않으며, 캐시 우회를 적용합니다.
+  const DEPLOY_POLL_MS = 10000;
+  const DEPLOY_WAIT_MS = 10 * 60 * 1000;
+  let lastPublishedPayload = '';
+  let lastPublishStarted = 0;
+  let deploySequence = 0;
+  let deployTimer = null;
+  let deploymentCheckBusy = false;
+  const deploymentUI = (phase, detail) => {
+    const box = $('deployment-progress');
+    if (!box) return;
+    box.hidden = false;
+    const stateEl=$('deploy-state');
+    stateEl.textContent = phase === 'complete' ? '공개 반영 확인 완료' :
+      phase === 'timeout' ? '10분 경과 · 확인 필요' :
+      phase === 'error' ? '확인 중 오류 발생' : '공개 반영 대기 중';
+    stateEl.dataset.phase=phase;
+    $('deploy-step-save').dataset.state='done';
+    $('deploy-step-publish').dataset.state=phase==='complete'?'done':phase==='waiting'?'active':'pending';
+    $('deploy-step-verify').dataset.state=phase==='complete'?'done':phase==='error'?'warning':'pending';
+    $('deploy-detail').textContent=detail;
+  };
+  async function checkPublicDeployment() {
+    if(!lastPublishedPayload || deploymentCheckBusy)return;
+    const seq=deploySequence;
+    deploymentCheckBusy=true;
+    $('check-deploy').disabled=true;
+    try {
+      const url=new URL('data.js', location.href);
+      url.searchParams.set('publish_check', String(Date.now()));
+      const response=await fetch(url,{cache:'no-store',headers:{'Cache-Control':'no-cache'}});
+      if(seq!==deploySequence)return;
+      if(!response.ok)throw Error(`방문자 데이터 응답 ${response.status}`);
+      const live=(await response.text()).replace(/^\uFEFF/,'').trim();
+      const expected=lastPublishedPayload.replace(/^\uFEFF/,'').trim();
+      if(live===expected) {
+        if(deployTimer)clearTimeout(deployTimer);
+        deployTimer=null;
+        deploymentUI('complete','방금 저장한 내용이 공개 홈페이지의 data.js에 반영된 것을 확인했습니다. 이미 열려 있는 방문자 페이지는 새로고침해야 보일 수 있습니다.');
+        setStatus('GitHub 저장 및 공개 반영 확인 완료. 방문자 페이지를 새로고침해 주세요.','success');
+      } else if(Date.now()-lastPublishStarted >= DEPLOY_WAIT_MS) {
+        deploymentUI('timeout','10분 동안 공개 데이터가 바뀌지 않았습니다. GitHub Actions 배포 결과를 확인하고, 필요하면 [지금 다시 확인]을 누르세요.');
+      } else {
+        deploymentUI('waiting','GitHub에는 저장됐지만 공개 홈페이지에는 아직 이전 데이터가 보입니다. 자동으로 10초마다 확인하고 있어요.');
+      }
+    }catch(err) {
+      if(seq!==deploySequence)return;
+      const overdue=Date.now()-lastPublishStarted>=DEPLOY_WAIT_MS;
+      deploymentUI(overdue?'timeout':'error',`공개 파일 확인이 일시적으로 실패했습니다 (${err.message}). ${overdue?'GitHub Actions를 확인해 주세요.':'잠시 후 자동으로 다시 확인합니다.'}`);
+    } finally {
+      deploymentCheckBusy=false;
+      $('check-deploy').disabled=false;
+    }
+    if(seq===deploySequence && $('deploy-state').dataset.phase!=='complete' && Date.now()-lastPublishStarted < DEPLOY_WAIT_MS) {
+      deployTimer=setTimeout(()=>checkPublicDeployment(),DEPLOY_POLL_MS);
+    }
+  }
+  function beginDeploymentWatch(payload) {
+    deploySequence += 1;
+    if(deployTimer)clearTimeout(deployTimer);
+    deployTimer=null;
+    lastPublishedPayload=payload;
+    lastPublishStarted=Date.now();
+    deploymentUI('waiting','GitHub 저장은 완료되었습니다. 공개 홈페이지에 같은 내용이 올라왔는지 확인하고 있어요.');
+    void checkPublicDeployment();
+  }
+  $('check-deploy').addEventListener('click',()=>{
+    if(!lastPublishedPayload){setStatus('먼저 GitHub에 저장해 주세요. 저장한 뒤 공개 반영 상태를 확인할 수 있습니다.','');return;}
+    if(deployTimer)clearTimeout(deployTimer);
+    deployTimer=null;
+    void checkPublicDeployment();
+  });
   function headers() {
     return {'Accept':'application/vnd.github+json','Authorization':`Bearer ${githubToken}`,'X-GitHub-Api-Version':'2022-11-28'};
   }
@@ -249,10 +318,12 @@
         c.image=pathname;releaseImage(id);
       }
       setStatus('캐릭터 및 세계관 데이터를 GitHub에 저장하는 중...','');
-      const result=await upload('data.js',new TextEncoder().encode(serializedData()),latest.sha,'Update character and world archive via editor');
+      const publishedPayload=serializedData();
+      const result=await upload('data.js',new TextEncoder().encode(publishedPayload),latest.sha,'Update character and world archive via editor');
       remoteSha=result.content?.sha || '';
       dirty=false;initial=clone(state);renderEditor();
-      setStatus('GitHub 저장이 완료되었습니다. GitHub Pages에 변경사항이 배포되기까지 잠시 걸릴 수 있습니다. 완료 후 방문자 사이트를 새로고침하세요.','success');
+      setStatus('GitHub 저장 완료. 실제 공개 홈페이지 반영 여부를 확인 중입니다.','success');
+      beginDeploymentWatch(publishedPayload);
     }catch(err){setStatus(`저장 실패: ${err.message}\n이미지 일부가 먼저 올라갔을 수 있습니다. 중복을 피하려면 상태를 확인한 뒤 재시도하세요.`,'error');}
     finally {busy=false;$('publish-btn').disabled=false;$('verify-token').disabled=false;}
   });
