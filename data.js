@@ -1,9 +1,9 @@
 // 이 파일은 관리자 편집기에서 자동으로 생성합니다.
 window.SITE_DATA = {
-  "siteTitle": "[사이트 이름을 쓰시오]test",
-  "siteKicker": "[사이트 분류를 쓰시오]",
-  "heroTitleLine1": "[메인 제목]",
-  "heroTitleLine2": "[메인 부제목]",
+  "siteTitle": "[사이트 이름을 쓰시오]_test",
+  "siteKicker": "[사이트 분류를 쓰시오]_test",
+  "heroTitleLine1": "[메인 제목]_test",
+  "heroTitleLine2": "[메인 부제목]_test",
   "worldName": "[세계관 이름을 쓰시오]",
   "tagline": "[한 줄 소개 문구를 쓰시오]",
   "summary": "[세계관 전체 소개를 쓰시오]",
